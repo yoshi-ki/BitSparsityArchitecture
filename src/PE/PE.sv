@@ -17,24 +17,30 @@ module PE (
   generate
   for(i=0;i<16;i=i+1)
     begin: DoNBitAddition
-      NBitAdder #(.bitsize(3)) nBitAdder
-        (
-          .input1(AExps[i]),
-          .input2(BExps[i]),
-          .answer(sumExps[i])
-        );
+      // NBitAdder #(.bitsize(3)) nBitAdder
+      //   (
+      //     .input1(AExps[i]),
+      //     .input2(BExps[i]),
+      //     .answer(sumExps[i])
+      //   );
+      assign sumExps[i] = AExps[i] + BExps[i];
+      assign multipliedSign[i] = ASigns[i] ^ BSigns[i];
     end
-    assign multipliedSign[i] = ASigns[i] ^ BSigns[i];
   endgenerate
 
   // step2: convert to one-hot vector
   wire [15:0][15:0] oneHotVector;
-  //CreateOneHotVector createOneHotVector(.SumExps(sumExps), .OneHotVector(oneHotVector));
+  generate
+  for(i=0;i<16;i=i+1)
+    begin: CreateOneHot
+      CreateOneHotVector createOneHotVector(.SumExps(sumExps[i]), .OneHotVector(oneHotVector[i]));
+    end
+  endgenerate
 
   assign RESULT = sumExps;
 
   // step3: histrogram
-
+  //CreateHistGram createHistGram()
   // step4: addition
 
 endmodule

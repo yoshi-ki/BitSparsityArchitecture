@@ -23,4 +23,5 @@ assign OneHotVector =
   (SumExps == 4'b1110) ? 16'b0100000000000000 :
   16'b1000000000000000;
 
+endmodule
 `default_nettype wire
