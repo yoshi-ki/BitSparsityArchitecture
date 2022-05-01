@@ -39,8 +39,10 @@ module PE (
 
   assign RESULT = sumExps;
 
-  // step3: histrogram
-  //CreateHistGram createHistGram()
+  // step3: histogram TODO: we should take a look at the 15:0 or 0:15 very closely
+  wire [15:0][5:0] beforeAllignmentVector;
+  CreateHistoGram createHistoGram(.OneHotVector(oneHotVector), .MultipliedSign(multipliedSign), .BeforeAllignmentVector(beforeAllignmentVector));
+
   // step4: addition
 
 endmodule
