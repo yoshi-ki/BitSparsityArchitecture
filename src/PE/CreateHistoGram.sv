@@ -3,6 +3,7 @@
 module CreateHistoGram (
   input wire [15:0][15:0] OneHotVector,
   input wire [15:0] MultipliedSign,
+  input wire [15:0] IsInvalidPair,
   output wire [15:0][5:0] BeforeAllignmentVector
 );
 
@@ -12,7 +13,7 @@ generate
   wire [15:0][15:0] targetVectors;
   for(i=0;i<16;i=i+1) begin
     for(j=0;j<16;j=j+1) begin
-      assign targetVectors[i][j] = OneHotVector[j][i];
+      assign targetVectors[i][j] = OneHotVector[j][i] & !(IsInvalidPair[j]);
     end
   end
 endgenerate
