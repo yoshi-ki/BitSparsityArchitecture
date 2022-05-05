@@ -1,11 +1,11 @@
 `default_nettype none
 module  ss_fifo_sync
 #(
-  parameter        Bw_d   = 8     ; // data width
-  parameter        Bw_a   = 10    ; // address width
-  parameter        Depth  = ( 1 << Bw_a ) ;
-  parameter        Thrs_wr= Depth/4*3     ;       // for write ready
-  parameter        Thrs_rd= Depth/4*1     ;       // for read ready
+  parameter        Bw_d   = 8     , // data width
+  parameter        Bw_a   = 10    , // address width
+  parameter        Depth  = ( 1 << Bw_a ) ,
+  parameter        Thrs_wr= Depth/4*3     ,       // for write ready
+  parameter        Thrs_rd= Depth/4*1             // for read ready
 )
 (
   input wire [Bw_d-1:00] wr_di,        // write data in
@@ -16,7 +16,7 @@ module  ss_fifo_sync
 
   output wire wr_rdy,                  // buffer write ready
   output wire rd_rdy,                  // buffer read ready
-  output wire [Bw_d-1:00] rd_do,       // read data out
+  output reg [Bw_d-1:00] rd_do        // read data out
 );
 
   // wires & regs
@@ -25,7 +25,6 @@ module  ss_fifo_sync
   wire    [Bw_a:00]        df_ad  ;       // address difference
 
   reg     [Bw_d-1:00]      m_ary  [0:Depth-1] ;       // memory array
-  reg     [Bw_d-1:00]      rd_do  ;       // data output reg
 
   // write pointer
   always  @( posedge clk ) begin

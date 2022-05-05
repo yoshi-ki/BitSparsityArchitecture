@@ -29,9 +29,9 @@ module BitConverterFIFO (
   );
 
 // define bit places fifo here
-  wire [2:0] actBitPlacesFIFOWriteDataIn;
-  wire actBitPlacesFIFOWriteEnable;
-  wire actBitPlacesFIFOWriteReady;
+  reg [2:0] actBitPlacesFIFOWriteDataIn;
+  reg actBitPlacesFIFOWriteEnable;
+  reg actBitPlacesFIFOWriteReady;
   ss_fifo_sync #(.Bw_d(3), .Bw_a(5)) actBitPlacesFIFO
   (
     .wr_di(actBitPlacesFIFOWriteDataIn),
@@ -49,7 +49,7 @@ module BitConverterFIFO (
     .CLK(CLK),
     .RSTN(RSTN),
     // for read from values
-    .ActValuesPlacesFIFOReadEnable(actValuesPlacesFIFOReadEnable),
+    .ActValuesFIFOReadEnable(actValuesFIFOReadEnable),
     .ActValuesFIFOReadReady(actValuesFIFOReadReady),
     .ActValuesFIFOReadDataOut(actValuesFIFOReadDataOut),
     // for write to bits
@@ -64,10 +64,10 @@ endmodule
 module ValuesToBitConverter (
   input wire CLK,
   input wire RSTN,
-  input wire ActValuesPlacesFIFOReadEnable,
+  input reg ActValuesFIFOReadEnable,
   input wire ActValuesFIFOReadReady,
-  input [7:0] ActValuesFIFOReadDataOut,
-  input wire ActBitPlacesFIFOWriteEnable,
+  input wire [7:0] ActValuesFIFOReadDataOut,
+  input reg ActBitPlacesFIFOWriteEnable,
   input wire ActBitPlacesFIFOWriteReady,
   output reg [2:0] ActBitPlacesFIFOWriteDataIn
 );
@@ -105,12 +105,12 @@ module ValuesToBitConverter (
     case(module_state)
       s_read: begin
         if (ActValuesFIFOReadReady) begin
-          ActValuesPlacesFIFOReadEnable <= 1'b1;
+          ActValuesFIFOReadEnable <= 1'b1;
           data <= ActValuesFIFOReadDataOut;
           module_state <= s_process;
         end
         else begin
-          ActValuesPlacesFIFOReadEnable <= 1'b0;
+          ActValuesFIFOReadEnable <= 1'b0;
           ActBitPlacesFIFOWriteEnable <= 1'b0;
         end
       end
@@ -125,7 +125,7 @@ module ValuesToBitConverter (
           end
         end
         else begin
-          ActValuesPlacesFIFOReadEnable <= 1'b0;
+          ActValuesFIFOReadEnable <= 1'b0;
           ActBitPlacesFIFOWriteEnable <= 1'b0;
         end
       end

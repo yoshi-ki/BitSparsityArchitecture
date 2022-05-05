@@ -2,17 +2,17 @@
 `default_nettype none
 
 // exec cpu for test
-module Test_ValuesToBit ();
+module Test_BitConverterFIFO ();
 
   // input and output
   reg CLK;
   reg RSTN;
-  reg [7:0] ActValuesFIFOWriteDataIn,
-  reg ActValuesFIFOWriteEnable,
-  reg ActBitPlacesFIFOReadEnable,
-  reg ActValuesFIFOWriteReady,
-  reg ActBitPlacesFIFOReadReady,
-  reg [2:0] ActBitPlacesFIFOReadDataOut
+  reg [7:0] ActValuesFIFOWriteDataIn;
+  reg ActValuesFIFOWriteEnable;
+  reg ActBitPlacesFIFOReadEnable;
+  reg ActValuesFIFOWriteReady;
+  reg ActBitPlacesFIFOReadReady;
+  reg [2:0] ActBitPlacesFIFOReadDataOut;
 
   BitConverterFIFO bitConverterFIFO(
     .CLK(CLK),
