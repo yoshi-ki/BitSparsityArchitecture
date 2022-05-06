@@ -48,13 +48,13 @@ module BitConverterFIFO (
   ValuesToBitConverter valuesToBitConverter(
     .CLK(CLK),
     .RSTN(RSTN),
-    // for read from values
+    // for read from values fifo
     .ActValuesFIFOReadEnable(actValuesFIFOReadEnable),
     .ActValuesFIFOReadReady(actValuesFIFOReadReady),
     .ActValuesFIFOReadDataOut(actValuesFIFOReadDataOut),
-    // for write to bits
-    .ActBitPlacesFIFOWriteEnable(actBitPlacesFIFOWriteEnable),
+    // for write to bits fifo
     .ActBitPlacesFIFOWriteReady(actBitPlacesFIFOWriteReady),
+    .ActBitPlacesFIFOWriteEnable(actBitPlacesFIFOWriteEnable),
     .ActBitPlacesFIFOWriteDataIn(actBitPlacesFIFOWriteDataIn)
   );
 
@@ -67,15 +67,17 @@ module ValuesToBitConverter (
   input reg ActValuesFIFOReadEnable,
   input wire ActValuesFIFOReadReady,
   input wire [7:0] ActValuesFIFOReadDataOut,
-  input reg ActBitPlacesFIFOWriteEnable,
   input wire ActBitPlacesFIFOWriteReady,
+  output reg ActBitPlacesFIFOWriteEnable,
   output reg [2:0] ActBitPlacesFIFOWriteDataIn
 );
 
   // define state
   reg [3:0] module_state;
-  localparam s_read = 0;
-  localparam s_process = 1;
+  localparam s_read_ready_wait = 0;
+  localparam s_read = 1;
+  localparam s_write_ready_wait = 2;
+  localparam s_write = 3;
   initial begin
     module_state <= s_read;
   end
@@ -103,34 +105,43 @@ module ValuesToBitConverter (
 
   always @(posedge CLK) begin
     case(module_state)
-      s_read: begin
+      s_read_ready_wait: begin
+        ActBitPlacesFIFOWriteEnable <= 1'b0;
         if (ActValuesFIFOReadReady) begin
-          ActValuesFIFOReadEnable = 1'b1;
-          data <= ActValuesFIFOReadDataOut;
-          module_state <= s_process;
+          ActValuesFIFOReadEnable <= 1'b1;
+          module_state <= s_read;
         end
         else begin
-          ActValuesFIFOReadEnable = 1'b0;
-          ActBitPlacesFIFOWriteEnable = 1'b0;
+          ActValuesFIFOReadEnable <= 1'b0;
         end
       end
-      s_process: begin
-        // write the bit place to output
-        if (ActBitPlacesFIFOWriteReady) begin
-          if (data == 8'b00000000) begin
-            ActBitPlacesFIFOWriteEnable = 1'b0;
-            module_state <= s_read;
-          end
-          else begin
-            ActBitPlacesFIFOWriteEnable = 1'b1;
-            ActBitPlacesFIFOWriteDataIn = place;
-            data[place] <= 1'b0;
-          end
+      s_read: begin
+        ActValuesFIFOReadEnable <= 1'b0;
+        data <= ActValuesFIFOReadDataOut;
+        module_state <= s_write_ready_wait;
+      end
+      s_write_ready_wait: begin
+        if (data == 8'b00000000) begin
+          // when input data is zero
+          ActBitPlacesFIFOWriteEnable = 1'b0;
+          module_state <= s_read_ready_wait;
         end
         else begin
-          ActValuesFIFOReadEnable = 1'b0;
-          ActBitPlacesFIFOWriteEnable = 1'b0;
+          if (ActBitPlacesFIFOWriteReady) begin
+            ActBitPlacesFIFOWriteEnable <= 1'b1;
+            module_state <= s_write;
+          end
+          else begin
+            ActBitPlacesFIFOWriteEnable <= 1'b0;
+          end
         end
+      end
+      s_write: begin
+        // write the bit place to output
+        ActBitPlacesFIFOWriteEnable <= 1'b0;
+        ActBitPlacesFIFOWriteDataIn <= place;
+        data[place] <= 1'b0;
+        module_state <= s_write_ready_wait;
       end
     endcase
   end

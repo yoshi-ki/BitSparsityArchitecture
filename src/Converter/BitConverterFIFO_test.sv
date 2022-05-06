@@ -41,9 +41,16 @@ module Test_BitConverterFIFO ();
       if (i % 2 == 0) begin
         // do nothing
       end
-      else if (ActValuesFIFOWriteReady && i < 30) begin
-        ActValuesFIFOWriteDataIn = 8'b00010010;
+      else if (ActValuesFIFOWriteReady && (i == 37 || i == 41)) begin
         ActValuesFIFOWriteEnable = 1'b1;
+      end
+      else if (ActValuesFIFOWriteReady && (i == 39 || i == 43)) begin
+        if (i == 39) begin
+          ActValuesFIFOWriteDataIn = 8'b00010010;
+        end
+        else begin
+          ActValuesFIFOWriteDataIn = 8'b10000100;
+        end
       end
       else if (ActBitPlacesFIFOReadReady) begin
         ActBitPlacesFIFOReadEnable = 1'b1;
