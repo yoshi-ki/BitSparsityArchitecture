@@ -105,28 +105,31 @@ module ValuesToBitConverter (
     case(module_state)
       s_read: begin
         if (ActValuesFIFOReadReady) begin
-          ActValuesFIFOReadEnable <= 1'b1;
+          ActValuesFIFOReadEnable = 1'b1;
           data <= ActValuesFIFOReadDataOut;
           module_state <= s_process;
         end
         else begin
-          ActValuesFIFOReadEnable <= 1'b0;
-          ActBitPlacesFIFOWriteEnable <= 1'b0;
+          ActValuesFIFOReadEnable = 1'b0;
+          ActBitPlacesFIFOWriteEnable = 1'b0;
         end
       end
       s_process: begin
         // write the bit place to output
-        if (ActBitPlacesFIFOWriteEnable) begin
-          ActBitPlacesFIFOWriteEnable <= 1'b1;
-          ActBitPlacesFIFOWriteDataIn <= place;
-          data[place] <= 1'b0;
+        if (ActBitPlacesFIFOWriteReady) begin
           if (data == 8'b00000000) begin
+            ActBitPlacesFIFOWriteEnable = 1'b0;
             module_state <= s_read;
+          end
+          else begin
+            ActBitPlacesFIFOWriteEnable = 1'b1;
+            ActBitPlacesFIFOWriteDataIn = place;
+            data[place] <= 1'b0;
           end
         end
         else begin
-          ActValuesFIFOReadEnable <= 1'b0;
-          ActBitPlacesFIFOWriteEnable <= 1'b0;
+          ActValuesFIFOReadEnable = 1'b0;
+          ActBitPlacesFIFOWriteEnable = 1'b0;
         end
       end
     endcase

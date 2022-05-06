@@ -27,22 +27,31 @@ module Test_BitConverterFIFO ();
 
   // test program
   int i;
+  reg hoge;
   initial begin
     CLK = 0;
+    RSTN = 0;
+    #10000 CLK = ~CLK;
+    RSTN = ~RSTN;
+    #10000 CLK = ~CLK;
+    RSTN = ~RSTN;
     // write values here
     for (i = 0; i < 4000; i++) begin
       #10000 CLK = ~CLK;
-      if (ActValuesFIFOWriteEnable && i < 100) begin
-        ActValuesFIFOWriteDataIn <= 8'b00010001;
-        ActValuesFIFOWriteEnable <= 1'b1;
+      if (i % 2 == 0) begin
+        // do nothing
+      end
+      else if (ActValuesFIFOWriteReady && i < 30) begin
+        ActValuesFIFOWriteDataIn = 8'b00010010;
+        ActValuesFIFOWriteEnable = 1'b1;
       end
       else if (ActBitPlacesFIFOReadReady) begin
-        ActBitPlacesFIFOReadEnable<= 1'b1;
+        ActBitPlacesFIFOReadEnable = 1'b1;
         $display("%02d", ActBitPlacesFIFOReadDataOut);
       end
       else begin
-        ActValuesFIFOWriteEnable <= 1'b0;
-        ActBitPlacesFIFOReadEnable<= 1'b0;
+        ActValuesFIFOWriteEnable = 1'b0;
+        ActBitPlacesFIFOReadEnable = 1'b0;
       end
     end
   end
