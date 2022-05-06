@@ -29,9 +29,10 @@ module BitConverterFIFO (
   );
 
 // define bit places fifo here
-  reg [2:0] actBitPlacesFIFOWriteDataIn;
-  reg actBitPlacesFIFOWriteEnable;
-  reg actBitPlacesFIFOWriteReady;
+  wire [2:0] actBitPlacesFIFOWriteDataIn;
+  wire actBitPlacesFIFOWriteEnable;
+  wire actBitPlacesFIFOWriteReady;
+
   ss_fifo_sync #(.Bw_d(3), .Bw_a(5)) actBitPlacesFIFO
   (
     .wr_di(actBitPlacesFIFOWriteDataIn),
@@ -64,7 +65,7 @@ endmodule
 module ValuesToBitConverter (
   input wire CLK,
   input wire RSTN,
-  input reg ActValuesFIFOReadEnable,
+  output reg ActValuesFIFOReadEnable,
   input wire ActValuesFIFOReadReady,
   input wire [7:0] ActValuesFIFOReadDataOut,
   input wire ActBitPlacesFIFOWriteReady,
@@ -76,10 +77,9 @@ module ValuesToBitConverter (
   reg [3:0] module_state;
   localparam s_read_ready_wait = 0;
   localparam s_read = 1;
-  localparam s_write_ready_wait = 2;
-  localparam s_write = 3;
+  localparam s_write = 2;
   initial begin
-    module_state <= s_read;
+    module_state <= s_read_ready_wait;
   end
 
   // define data processed inside the module
@@ -118,9 +118,9 @@ module ValuesToBitConverter (
       s_read: begin
         ActValuesFIFOReadEnable <= 1'b0;
         data <= ActValuesFIFOReadDataOut;
-        module_state <= s_write_ready_wait;
+        module_state <= s_write;
       end
-      s_write_ready_wait: begin
+      s_write: begin
         if (data == 8'b00000000) begin
           // when input data is zero
           ActBitPlacesFIFOWriteEnable = 1'b0;
@@ -129,19 +129,13 @@ module ValuesToBitConverter (
         else begin
           if (ActBitPlacesFIFOWriteReady) begin
             ActBitPlacesFIFOWriteEnable <= 1'b1;
-            module_state <= s_write;
+            ActBitPlacesFIFOWriteDataIn <= place;
+            data[place] <= 1'b0;
           end
           else begin
             ActBitPlacesFIFOWriteEnable <= 1'b0;
           end
         end
-      end
-      s_write: begin
-        // write the bit place to output
-        ActBitPlacesFIFOWriteEnable <= 1'b0;
-        ActBitPlacesFIFOWriteDataIn <= place;
-        data[place] <= 1'b0;
-        module_state <= s_write_ready_wait;
       end
     endcase
   end

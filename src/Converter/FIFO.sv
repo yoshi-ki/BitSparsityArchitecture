@@ -5,7 +5,7 @@ module  ss_fifo_sync
   parameter        Bw_a   = 10    , // address width
   parameter        Depth  = ( 1 << Bw_a ) ,
   parameter        Thrs_wr= Depth/4*3     ,       // for write ready
-  parameter        Thrs_rd= Depth/4*1             // for read ready
+  parameter        Thrs_rd= 1             // for read ready
 )
 (
   input wire [Bw_d-1:00] wr_di,        // write data in
